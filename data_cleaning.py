@@ -8,9 +8,7 @@ from datetime import datetime
 
 print("--------------Starting Data Cleaning------------------")
 # Importing Dataset
-data=pd.read_csv('Data/Flight_Data.csv',usecols=['searchDate', 'flightDate', 'startingAirport',
-       'starting_airport_name', 'destinationAirport',
-       'destination_airport_name', 
+data=pd.read_csv('Data/Flight_Data.csv',usecols=['searchDate', 'flightDate', 'startingAirport', 'destinationAirport', 
        'travelDuration', 'isBasicEconomy', 'isRefundable', 'isNonStop',
        'seatsRemaining', 'totalTravelDistance',
        'segmentsArrivalAirportCode', 'segmentsDepartureAirportCode',
