@@ -28,6 +28,6 @@ data.insert(column_index, 'destination_airport_name', data.pop('destination_airp
 column_index = data.columns.get_loc('startingAirport') + 1
 data.insert(column_index, 'starting_airport_name', data.pop('starting_airport_name'))
 
-data.to_csv('Data/Flight_Data_New.csv',index=False)
+data.to_csv('Data/Flight_Data_with_airport_names.csv',index=False)
 
 data.head()
