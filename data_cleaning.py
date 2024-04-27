@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pyairports.airports import Airports
 from datetime import datetime
-print("--------------Starting Preprocessing------------------")
+
+print("--------------Starting Data Cleaning------------------")
 # Importing Dataset
-data=pd.read_csv('Data/Flight_Data_with_airport_names.csv',usecols=['searchDate', 'flightDate', 'startingAirport',
+data=pd.read_csv('Data/Flight_Data.csv',usecols=['searchDate', 'flightDate', 'startingAirport',
        'starting_airport_name', 'destinationAirport',
        'destination_airport_name', 
        'travelDuration', 'isBasicEconomy', 'isRefundable', 'isNonStop',
@@ -17,6 +18,30 @@ data=pd.read_csv('Data/Flight_Data_with_airport_names.csv',usecols=['searchDate'
        'segmentsEquipmentDescription','segmentsCabinCode','totalFare'])
 
 print("--------------Imported Data------------------")
+
+
+airports = Airports()
+airports.airport_iata('DTW')
+starting_airport=set(data['startingAirport'].values)
+destination_airport=set(data['destinationAirport'].values)
+all_airports=list(set(list(starting_airport) + list(destination_airport)))
+names={}
+for iata in all_airports:
+    airport_info=airports.airport_iata(iata)
+    names[iata]=airport_info[0]
+data['destination_airport_name'] = data['destinationAirport'].map(names)
+data['starting_airport_name']= data['startingAirport'].map(names)
+
+#Rearrange Destination airport
+column_index = data.columns.get_loc('destinationAirport') + 1
+data.insert(column_index, 'destination_airport_name', data.pop('destination_airport_name'))
+
+#Rearrange Starting airport
+column_index = data.columns.get_loc('startingAirport') + 1
+data.insert(column_index, 'starting_airport_name', data.pop('starting_airport_name'))
+
+print("--------------Added Airport Names------------------")
+
 # Extracting Number of days between flight Date and search date
 num_days=[]
 for dt in range(data.shape[0]):
@@ -109,7 +134,7 @@ data.insert(column_index, 'cabin_code_weight', data.pop('cabin_code_weight'))
 
 print("--------------Assigned Weights to Cabin Codes------------------")
 
-data.to_csv("Data/Cleaned_Data.csv",index=False)
+data.to_csv("Data/Flight_Data_Cleaned.csv",index=False)
 
 print("--------------Saved Data in CSV------------------")
 
