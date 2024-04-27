@@ -7,7 +7,7 @@ from pyairports.airports import Airports
 from datetime import datetime
 print("--------------Starting Preprocessing------------------")
 # Importing Dataset
-data=pd.read_csv('Data/Flight_Data_New.csv',usecols=['searchDate', 'flightDate', 'startingAirport',
+data=pd.read_csv('Data/Flight_Data_with_airport_names.csv',usecols=['searchDate', 'flightDate', 'startingAirport',
        'starting_airport_name', 'destinationAirport',
        'destination_airport_name', 
        'travelDuration', 'isBasicEconomy', 'isRefundable', 'isNonStop',
@@ -109,4 +109,7 @@ data.insert(column_index, 'cabin_code_weight', data.pop('cabin_code_weight'))
 
 print("--------------Assigned Weights to Cabin Codes------------------")
 
+data.to_csv("Data/Cleaned_Data.csv",index=False)
+
+print("--------------Saved Data in CSV------------------")
 
