@@ -49,7 +49,6 @@ for flight in range(data.shape[0]):
 
         total_distance=calculate_distance((starting_lat,starting_lon),(destination_lat,destination_lon))
         data.loc[flight,'totalTravelDistance']=round(total_distance,2)
-        print(round(total_distance,2))
 
 print('------Saving Data---------')
 data.to_csv('Data/Flight_Data_Processed.csv',index=False)
