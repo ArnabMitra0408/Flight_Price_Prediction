@@ -59,13 +59,11 @@ def Linear_Regression(X,Y):
 
     # Calculate average MSE across all folds
     avg_mse = np.mean(lr_mse_scores)
-    print(lr_mse_scores)
     print("Average MSE:", avg_mse)
 
     # Calculate average r2 across all folds
     avg_r2_lr = np.mean(lr_r2_scores)
-    print("Average R2 score", lr_r2_scores)
-    print("Average MSE:", avg_r2_lr)
+    print("Average R2 score", avg_r2_lr)
     end_time=time.time()
 
     print(f"time taken for linear Regression {end_time-start_time} seconds")
