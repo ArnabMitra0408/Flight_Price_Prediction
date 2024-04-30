@@ -6,10 +6,12 @@ from sklearn.model_selection import train_test_split,KFold,GridSearchCV
 from sklearn.preprocessing import MinMaxScaler,RobustScaler,StandardScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor,GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error,r2_score
 import time
 import pickle
+import xgboost
+
 
 
 def import_data():
@@ -121,15 +123,127 @@ def DecisionTree(X,Y):
     return best_regressor, mse, r2_decision_tree
 
 
-def Best_model(dt_r2,r2_lr,dt,lr):
-    if dt_r2>r2_lr:
+def RandomForest(X,Y):
+    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
+
+
+    X_train=X_train.reset_index(drop=True)
+    X_test=X_test.reset_index(drop=True)
+    y_train=y_train.reset_index(drop=True)
+    y_test=y_test.reset_index(drop=True)
+    #Scaling
+    standard=StandardScaler()
+
+    standard=standard.fit(X_train)
+    X_train=standard.transform(X_train)
+    X_test=standard.transform(X_test)
+
+
+    param_grid = {
+        'n_estimators':[60,70,80,100],
+        'max_depth': [12,15,16],
+        'min_samples_split': [2],
+        'min_samples_leaf': [2,3]
+    }
+
+
+    tree_regressor = RandomForestRegressor(random_state=42)
+
+    grid_search = GridSearchCV(tree_regressor, param_grid, cv=5, scoring='neg_mean_squared_error')
+
+    grid_search.fit(X_train, y_train)
+
+    best_regressor = grid_search.best_estimator_
+
+    print("Best parameters:", grid_search.best_params_)
+
+    # Evaluate the best model on the test set
+    y_pred = best_regressor.predict(X_test)
+    mse = mean_squared_error(y_test, y_pred)
+    print("Test set MSE:", mse)
+
+    r2 = r2_score(y_test, y_pred)
+    print("R2 score", r2)
+
+
+    del X_train
+    del X_test
+    del y_train
+    del y_test
+
+    return best_regressor, mse, r2
+
+
+def XGB(X,Y):
+    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
+
+
+    X_train=X_train.reset_index(drop=True)
+    X_test=X_test.reset_index(drop=True)
+    y_train=y_train.reset_index(drop=True)
+    y_test=y_test.reset_index(drop=True)
+    #Scaling
+    standard=StandardScaler()
+
+    standard=standard.fit(X_train)
+    X_train=standard.transform(X_train)
+    X_test=standard.transform(X_test)
+
+
+    param_grid = {
+        'n_estimators':[300,350,400,450],
+        'max_depth': [10,12,13,14,16],
+        'learning_rate':[0.1,0.3,0.5,0.6]
+    }
+
+
+    tree_regressor = xgboost.XGBRegressor(device='cuda:0')
+
+    grid_search = GridSearchCV(tree_regressor, param_grid, cv=5, scoring='neg_mean_squared_error')
+
+    grid_search.fit(X_train, y_train)
+
+    best_regressor = grid_search.best_estimator_
+
+    print("Best parameters:", grid_search.best_params_)
+
+    # Evaluate the best model on the test set
+    y_pred = best_regressor.predict(X_test)
+    mse = mean_squared_error(y_test, y_pred)
+    print("Test set MSE:", mse)
+
+    r2 = r2_score(y_test, y_pred)
+    print("R2 score", r2)
+
+
+    del X_train
+    del X_test
+    del y_train
+    del y_test
+
+    return best_regressor, mse, r2
+
+
+def Best_model(dt_r2,r2_lr,rf_r2,xgb_r2,dt,lr,rf,xgb):
+
+    max_variable = max((('dt_r2', dt_r2), ('r2_lr', r2_lr), ('rf_r2', rf_r2), ('xgb_r2', xgb_r2)), key=lambda x: x[1])
+
+    if max_variable[0] =='dt_r2':
         print('Saving Decision Tree')
         with open('decision_tree.pkl', 'wb') as file:
             pickle.dump(dt, file)
-    else:
+    elif max_variable[0] =='r2_lr':
         print('Saving Linear Regression')
         with open('Linear_Regression.pkl', 'wb') as file:
             pickle.dump(lr, file)  
+    elif max_variable[0] =='rf_r2':
+        print('Saving Random Forest Regression')
+        with open('RF_Regression.pkl', 'wb') as file:
+            pickle.dump(rf, file)
+    elif max_variable[0] =='xgb_r2':
+        print('Saving XGB Regression')
+        with open('XGB_Regression.pkl', 'wb') as file:
+            pickle.dump(xgb, file) 
 
 
 
@@ -154,11 +268,21 @@ if __name__=='__main__':
 
     dt,dt_mse,dt_r2=DecisionTree(X,Y)
 
+    #Random Forest Regressor:
+    print("----------------Training Decision Tree Regressor----------------")
+
+    rf,rf_mse,rf_r2=RandomForest(X,Y)
+
+    #XGBoost Regressor:
+    print("----------------Training Decision Tree Regressor----------------")
+
+    xgb,xgb_mse,xgb_r2=XGB(X,Y)
+
 
     #Choosing best model:
 
     print("----------------Saving best model----------------")
-    Best_model(dt_r2,r2_lr,dt,lr)
+    Best_model(dt_r2,r2_lr,rf_r2,xgb_r2,dt,lr,rf,xgb)
 
 
  
