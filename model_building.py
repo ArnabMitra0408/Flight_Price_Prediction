@@ -92,7 +92,7 @@ def DecisionTree(X,Y):
 
     param_grid = {
         'max_depth': [8,10,12,15,16],
-        'min_samples_split': [1,2,3],
+        'min_samples_split': [2,3],
         'min_samples_leaf': [2,3,4,5]
     }
 
@@ -143,7 +143,7 @@ def RandomForest(X,Y):
     param_grid = {
         'n_estimators':[60,70,80,100],
         'max_depth': [12,15,16],
-        'min_samples_split': [2],
+        'min_samples_split': [2,3],
         'min_samples_leaf': [2,3]
     }
 
@@ -230,19 +230,19 @@ def Best_model(dt_r2,r2_lr,rf_r2,xgb_r2,dt,lr,rf,xgb):
     max_variable = max((('dt_r2', dt_r2), ('r2_lr', r2_lr), ('rf_r2', rf_r2), ('xgb_r2', xgb_r2)), key=lambda x: x[1])
 
     if max_variable[0] =='dt_r2':
-        print('Saving Decision Tree')
+        print('Saving Decision Tree with r2 of: ', dt_r2)
         with open('decision_tree.pkl', 'wb') as file:
             pickle.dump(dt, file)
     elif max_variable[0] =='r2_lr':
-        print('Saving Linear Regression')
+        print('Saving Linear Regression with r2 of: ', r2_lr)
         with open('Linear_Regression.pkl', 'wb') as file:
             pickle.dump(lr, file)  
     elif max_variable[0] =='rf_r2':
-        print('Saving Random Forest Regression')
+        print('Saving Random Forest Regression with r2 of: ',rf_r2)
         with open('RF_Regression.pkl', 'wb') as file:
             pickle.dump(rf, file)
     elif max_variable[0] =='xgb_r2':
-        print('Saving XGB Regression')
+        print('Saving XGB Regression with r2 of: ', xgb_r2)
         with open('XGB_Regression.pkl', 'wb') as file:
             pickle.dump(xgb, file) 
 
@@ -270,12 +270,12 @@ if __name__=='__main__':
     dt,dt_mse,dt_r2=DecisionTree(X,Y)
 
     #Random Forest Regressor:
-    print("----------------Training Decision Tree Regressor----------------")
+    print("----------------Training Random Forest Regressor----------------")
 
     rf,rf_mse,rf_r2=RandomForest(X,Y)
 
     #XGBoost Regressor:
-    print("----------------Training Decision Tree Regressor----------------")
+    print("----------------Training XGBoost Regressor----------------")
 
     xgb,xgb_mse,xgb_r2=XGB(X,Y)
 
