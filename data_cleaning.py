@@ -5,134 +5,75 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pyairports.airports import Airports
 from datetime import datetime
+from geopy.distance import geodesic
 
-print("--------------Starting Data Cleaning------------------")
-# Importing Dataset
-data=pd.read_csv('Data/Flight_Data.csv',usecols=['searchDate', 'flightDate', 'startingAirport', 'destinationAirport', 
+def import_data():
+    data=pd.read_csv('Data/Flight_Data.csv',usecols=['searchDate', 'flightDate', 'startingAirport', 'destinationAirport', 
        'travelDuration', 'isBasicEconomy', 'isRefundable', 'isNonStop',
        'seatsRemaining', 'totalTravelDistance',
        'segmentsArrivalAirportCode', 'segmentsDepartureAirportCode',
        'segmentsAirlineName',
        'segmentsEquipmentDescription','segmentsCabinCode','totalFare'])
+    return data
 
-print("--------------Imported Data------------------")
+def get_airport_names(data):
+    airports = Airports()
+    airports.airport_iata('DTW')
+    starting_airport=set(data['startingAirport'].values)
+    destination_airport=set(data['destinationAirport'].values)
+    all_airports=list(set(list(starting_airport) + list(destination_airport)))
+    names={}
+    for iata in all_airports:
+        airport_info=airports.airport_iata(iata)
+        names[iata]=airport_info[0]
+    data['destination_airport_name'] = data['destinationAirport'].map(names)
+    data['starting_airport_name']= data['startingAirport'].map(names)
 
+    #Rearrange Destination airport
+    column_index = data.columns.get_loc('destinationAirport') + 1
+    data.insert(column_index, 'destination_airport_name', data.pop('destination_airport_name'))
 
-airports = Airports()
-airports.airport_iata('DTW')
-starting_airport=set(data['startingAirport'].values)
-destination_airport=set(data['destinationAirport'].values)
-all_airports=list(set(list(starting_airport) + list(destination_airport)))
-names={}
-for iata in all_airports:
-    airport_info=airports.airport_iata(iata)
-    names[iata]=airport_info[0]
-data['destination_airport_name'] = data['destinationAirport'].map(names)
-data['starting_airport_name']= data['startingAirport'].map(names)
+    #Rearrange Starting airport
+    column_index = data.columns.get_loc('startingAirport') + 1
+    data.insert(column_index, 'starting_airport_name', data.pop('starting_airport_name'))
+    return data
 
-#Rearrange Destination airport
-column_index = data.columns.get_loc('destinationAirport') + 1
-data.insert(column_index, 'destination_airport_name', data.pop('destination_airport_name'))
+def calculate_distance(starting_coord,destination_coord):
+    return geodesic(starting_coord, destination_coord).miles
 
-#Rearrange Starting airport
-column_index = data.columns.get_loc('startingAirport') + 1
-data.insert(column_index, 'starting_airport_name', data.pop('starting_airport_name'))
+def Travel_Distance_Nulls(data):
+    for flight in range(data.shape[0]):
+        if pd.isnull(data.at[flight, 'totalTravelDistance']):
+            airports = Airports()
+            starting_airport=airports.airport_iata(list(data['startingAirport'][flight]])
+            starting_lat=float(starting_airport[5])
+            starting_lon=float(starting_airport[6])
 
-print("--------------Added Airport Names------------------")
+            destination_airport=airports.airport_iata(data['destinationAirport'][flight])
+            destination_lat=float(destination_airport[5])
+            destination_lon=float(destination_airport[6])
 
-# Extracting Number of days between flight Date and search date
-num_days=[]
-for dt in range(data.shape[0]):
-    num_day=datetime.strptime(data['flightDate'][dt], '%Y-%m-%d').date()-datetime.strptime(data['searchDate'][dt], '%Y-%m-%d').date()
-    num_day=num_day.days
-    num_days.append(num_day)
-data['NumDays']=num_days
+            total_distance=calculate_distance((starting_lat,starting_lon),(destination_lat,destination_lon))
+            data.loc[flight,'totalTravelDistance']=round(total_distance,2)
+    return data
 
-column_index = data.columns.get_loc('flightDate') + 1
-data.insert(column_index, 'NumDays', data.pop('NumDays'))
+if __name__ =='__main__':
 
-print("--------------Extracted Num Days between flight Data and Search Date------------------")
+    print("--------------Importing Data------------------")
 
-# Flight Day (M,T,W,etc)
+    data=import_data()
 
-data['flightDate'] = pd.to_datetime(data['flightDate'])
-data['Day_of_Flight'] = data['flightDate'].dt.day_name()  
+    print("--------------Fetching Airport Names------------------")
 
+    data=get_airport_names(data)
 
-column_index = data.columns.get_loc('flightDate') + 1
-data.insert(column_index, 'Day_of_Flight', data.pop('Day_of_Flight'))
+    print('------------------------Handling Null Values in TravelDistance---------')
 
-days={'Monday':1,'Tuesday':2,'Wednesday':3,'Thursday':4,'Friday':5,'Saturday':6, 'Sunday':7}
-data['Day_of_Flight']=data['Day_of_Flight'].map(days)
+    data=Travel_Distance_Nulls(data)
+    
+    print("--------------Saving Cleaned Data in CSV------------------")
 
-print("--------------Extracted Flight Day (M,T,etc)------------------")
-#Number of Hours
-def calculate_total_minutes(duration):
-    hour=0
-    min=0
-    try: 
-        hour=int(duration.split('H')[0][-1])
-        try:
-            min= int(duration.split('H')[1][:-1])
-        except:
-            min=0
-    except:
-        try:
-            min= int(duration.split('H')[1][:-1])
-        except:
-            min=0
-    return (hour*60)+min
-
-data['Flight_time_in_minutes'] = data['travelDuration'].apply(calculate_total_minutes)
-
-column_index = data.columns.get_loc('travelDuration') + 1
-data.insert(column_index, 'Flight_time_in_minutes', data.pop('Flight_time_in_minutes'))
-
-data.drop(['travelDuration'],axis=1,inplace=True) 
-
-print("--------------Calculated Flight Time in Minutes------------------")
-
-#Boolean variables
-data[[ 'isBasicEconomy', 'isRefundable', 'isNonStop']].head()
-
-t_f={True:1,False:0}
-data['isBasicEconomy']=data['isBasicEconomy'].map(t_f)
-data['isRefundable']=data['isRefundable'].map(t_f)
-data['isNonStop']=data['isNonStop'].map(t_f)
-
-print("--------------Encoded Boolean Features (isBasicEconomy, isRefundable, isNonStop)------------------")
-
-#number of segments
-num_segments=[]
-for flight in range(data.shape[0]):
-    num_segments.append(data['segmentsArrivalAirportCode'][flight].count('|')+1)
+    data.to_csv("Data/Flight_Data_Cleaned.csv",index=False)
 
 
-data['Num_Segments']=num_segments
-column_index = data.columns.get_loc('segmentsArrivalAirportCode') + 1
-data.insert(column_index, 'Num_Segments', data.pop('Num_Segments'))
-
-print("--------------Calculated Number of Segments------------------")
-
-
-#cabin code weight
-cabin_code_weights={'coach':1,'premium coach':2,'business':3,'first':4}
-weighted_cabin_code=[]
-
-for cabin_code in range(data.shape[0]):
-    weight=0
-    segment_c_code=data['segmentsCabinCode'][cabin_code].split("||")
-    for c_code in segment_c_code:
-        weight += cabin_code_weights[c_code]
-    weighted_cabin_code.append(weight)
-
-data['cabin_code_weight']=weighted_cabin_code
-column_index = data.columns.get_loc('segmentsCabinCode') + 1
-data.insert(column_index, 'cabin_code_weight', data.pop('cabin_code_weight'))
-
-print("--------------Assigned Weights to Cabin Codes------------------")
-
-data.to_csv("Data/Flight_Data_Cleaned.csv",index=False)
-
-print("--------------Saved Data in CSV------------------")
 
