@@ -45,7 +45,7 @@ def Travel_Distance_Nulls(data):
     for flight in range(data.shape[0]):
         if pd.isnull(data.at[flight, 'totalTravelDistance']):
             airports = Airports()
-            starting_airport=airports.airport_iata(list(data['startingAirport'][flight]])
+            starting_airport=airports.airport_iata(data['startingAirport'][flight])
             starting_lat=float(starting_airport[5])
             starting_lon=float(starting_airport[6])
 
