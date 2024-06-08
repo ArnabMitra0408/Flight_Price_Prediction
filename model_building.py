@@ -16,7 +16,7 @@ import xgboost
 
 def import_data():
     data=pd.read_csv("Data/Flight_Data_Processed.csv")
-    data=data.sample(n=200000,random_state=42,ignore_index=True)
+    data=data.sample(n=20000,random_state=42,ignore_index=True)
     X=data.drop(columns=['totalFare'],axis=1)
     Y=data['totalFare']
     del data
