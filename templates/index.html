@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	
+	<title>Flight Price Prediction</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+
+<body>
+	<h1><b><i><em>Flight Price Prediction</em></i></b></h1>
+<form action="{{ url_for('predict')}}"method="post">
+	
+	<div >
+	
+	<div>
+		<h3>Enter Your Flight Day</h3>
+	<input type="text" name="Day_of_Flight",placeholder="Enter your Day of Flight">
+	</div>
+	<div >
+		<h3>Enter the Search Date</h3>
+	<input type="text" name="Search_Date" placeholder="Enter the Search Date" >
+	</div>
+	<div>
+		<h3>Enter the Flight Date</h3>
+	<input type="text" name="Flight_Date",placeholder="Enter the Flight Date">
+	</div>
+	<div >
+		<h3>Enter the Starting Airport IATA Code</h3>
+	<input type="text" name="Starting_Airport" placeholder="Enter the Starting Airport" >
+	</div>
+	<div >
+		<h3>Enter the Destination Airport IATA Code</h3>
+	<input type="text" name="Destination_Airport" placeholder="Enter the Destination Airport" >
+	</div>
+	<div >
+		<h3>Enter the Flight Time in minutes</h3>
+	<input type="number" name="Flight_Time" placeholder="Enter the Flight Time in minutes" >
+	</div>
+	<div >
+		<h3>Economy Flight</h3>
+	<input type="text" name="IsBasicEconomy" placeholder="Economy Flight (Y/N)" >
+	</div>
+	<div >
+		<h3>Refundable Flight</h3>
+	<input type="text" name="IsRefundable" placeholder="Refundable Flight (Y/N)" >
+	</div>
+	<div >
+		<h3>Non-Stop Flight</h3>
+	<input type="text" name="IsNonStop" placeholder="Non Stop Flight (Y/N)" >
+	</div>
+	<div >
+		<h3>Number of Seats Remaining</h3>
+	<input type="number" name="Seats_Remaining" placeholder="Enter the Number of Seats Remaining" >
+	</div>
+	<div >
+		<h3>Enter the Total Travel Distance</h3>
+	<input type="number" name="Travel_Distance" placeholder="Enter the Total Travel Distannce (Miles)" >
+	</div>
+	<div >
+		<h3>Enter the Number of Segments for the flight</h3>
+	<input type="number" name="NumSegments" placeholder="Enter the Number of Segments for the flight" >
+	</div>
+	<div >
+		<h3>Enter the Cabin Code</h3>
+	<input type="text" name="CabinCode" placeholder="Enter the Cabin Code" >
+	</div>
+	<br>
+	<br>
+	<br>
+	<br>
+	<div>
+	<input type="submit">
+	</div>
+	<br>
+	<br>
+	<br>
+	<br>
+	{% if fare %} 
+		<h2> Your Total Fare Is: $ {{fare}}</h2>
+	{% endif %}
+</form>
+</body>
+</html>
+
+

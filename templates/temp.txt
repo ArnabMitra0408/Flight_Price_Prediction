@@ -1,0 +1,13 @@
+Day_of_Flight
+NumDays
+startingAirport
+destinationAirport
+Flight_time_in_minutes
+isBasicEconomy
+isRefundable
+isNonStop
+totalFare
+seatsRemaining
+totalTravelDistance
+Num_Segments
+cabin_code_weight
